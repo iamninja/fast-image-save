@@ -1,0 +1,16 @@
+{
+  "title": "Fast Image Save",
+  "name": "fastimagesave",
+  "version": "0.0.1",
+  "description": "Fast save images on cloud services",
+  "main": "index.js",
+  "author": "Vagios Vlachos",
+  "engines": {
+    "firefox": ">=38.0a1",
+    "fennec": ">=38.0a1"
+  },
+  "license": "MIT",
+  "keywords": [
+    "jetpack"
+  ]
+}
