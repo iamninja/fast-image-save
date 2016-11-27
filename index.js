@@ -49,6 +49,7 @@ var loginPanel = panels.Panel({
 
 loginPanel.on('show', function(e) {
   loginPanel.port.on('gotCode', function(code) {
+    loginPanel.contentURL = self.data.url("html/loading.html");
     console.log("the code is:", code);
     var res = redeemCode(code);
   });
