@@ -3,6 +3,7 @@ var actionButtons = require("sdk/ui/button/action");
 var toggleButtons = require("sdk/ui/button/toggle");
 var panels = require("sdk/panel");
 var simpleStorage = require("sdk/simple-storage");
+var Request = require("sdk/request").Request;
 
 // a dummy function, to show how tests work.
 // to see how to test this function, look at test/test-index.js
@@ -16,7 +17,9 @@ var onedriveAppInfo = {
   client_id:      "37f653a2-df16-4cb6-8a81-109504cbf315",
   redirect_uri:   "https://www.auth.was.successful/",
   client_secret:  "ByXpk9qce7vX8yURd0PXUoc",
-  scopes:         "onedrive.readwrite offline_access"
+  scopes:         "onedrive.readwrite offline_access",
+  auth_url:       "https://login.live.com/oauth20_authorize.srf",
+  token_url:      "https://login.live.com/oauth20_token.srf"
 };
 
 simpleStorage.storage.onedriveCode = "";
@@ -33,7 +36,7 @@ var button = toggleButtons.ToggleButton({
 });
 
 var loginPanel = panels.Panel({
-  contentURL: "https://login.live.com/oauth20_authorize.srf?" +
+  contentURL: onedriveAppInfo.auth_url + "?" +
     "client_id=" + onedriveAppInfo.client_id +
     "&scope=" + onedriveAppInfo.scopes +
     "&response_type=code" +
@@ -47,8 +50,29 @@ var loginPanel = panels.Panel({
 loginPanel.on('show', function(e) {
   loginPanel.port.on('gotCode', function(code) {
     console.log("the code is:", code);
+    var res = redeemCode(code);
   });
 });
+
+function redeemCode(code) {
+  var requestToken = Request({
+    url: onedriveAppInfo.token_url,
+    contentType: "application/x-www-form-urlencoded",
+    content: {
+      client_id: onedriveAppInfo.client_id,
+      redirect_uri: onedriveAppInfo.redirect_uri,
+      client_secret: onedriveAppInfo.client_secret,
+      code: code,
+      grant_type: "authorization_code"
+    },
+    onComplete: function(response) {
+      console.log(response.json);
+      return response.json;
+    }
+  });
+
+  requestToken.post();
+}
 
 function handleActionButtonClick(state) {
   console.log("Button clicked...");
