@@ -17,7 +17,7 @@ var onedriveAppInfo = {
   client_id:      "37f653a2-df16-4cb6-8a81-109504cbf315",
   redirect_uri:   "https://www.auth.was.successful/",
   client_secret:  "ByXpk9qce7vX8yURd0PXUoc",
-  scopes:         "onedrive.readwrite offline_access",
+  scopes:         "onedrive.readwrite wl.offline_access",
   auth_url:       "https://login.live.com/oauth20_authorize.srf",
   token_url:      "https://login.live.com/oauth20_token.srf"
 };
@@ -78,6 +78,40 @@ function redeemCode(code) {
       simpleStorage.storage.onedrive.expires_on =
         Date.now() + (response.json.expires_in * 1000) - 100000;
       console.log(simpleStorage.storage.onedrive);
+      return response.json;
+    }
+  });
+
+  requestToken.post();
+}
+
+function checkOnedriveToken() {
+  if (Date.now() > simpleStorage.storage.onedrive.expires_on) {
+    return true;
+  }
+
+  return false;
+}
+
+function redeemRefresh() {
+  var requestToken = Request({
+    url: onedriveAppInfo.token_url,
+    contentType: "application/x-www-form-urlencoded",
+    content: {
+      client_id: onedriveAppInfo.client_id,
+      redirect_uri: onedriveAppInfo.redirect_uri,
+      client_secret: onedriveAppInfo.client_secret,
+      refresh_token: simpleStorage.storage.onedrive.refresh_token
+    },
+    onComplete: function(response) {
+      simpleStorage.storage.onedrive.access_token =
+        response.json.access_token;
+      simpleStorage.storage.onedrive.refresh_token =
+        response.json.refresh_token;
+      simpleStorage.storage.onedrive.expires_in =
+        response.json.expires_in * 1000;
+      simpleStorage.storage.onedrive.expires_on =
+        Date.now() + (response.json.expires_in * 1000) - 100000;
       return response.json;
     }
   });
