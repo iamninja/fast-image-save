@@ -5,6 +5,8 @@ var panels = require("sdk/panel");
 var simpleStorage = require("sdk/simple-storage");
 var Request = require("sdk/request").Request;
 
+var OneDrive = require("./lib/onedrive.js").OneDrive;
+
 // a dummy function, to show how tests work.
 // to see how to test this function, look at test/test-index.js
 function dummy(text, callback) {
@@ -12,15 +14,6 @@ function dummy(text, callback) {
 }
 
 exports.dummy = dummy;
-
-var onedriveAppInfo = {
-  client_id:      "37f653a2-df16-4cb6-8a81-109504cbf315",
-  redirect_uri:   "https://www.auth.was.successful/",
-  client_secret:  "ByXpk9qce7vX8yURd0PXUoc",
-  scopes:         "onedrive.readwrite wl.offline_access",
-  auth_url:       "https://login.live.com/oauth20_authorize.srf",
-  token_url:      "https://login.live.com/oauth20_token.srf"
-};
 
 if (!simpleStorage.storage.onedrive)
   simpleStorage.storage.onedrive = {};
@@ -37,11 +30,7 @@ var button = toggleButtons.ToggleButton({
 });
 
 var loginPanel = panels.Panel({
-  contentURL: onedriveAppInfo.auth_url + "?" +
-    "client_id=" + onedriveAppInfo.client_id +
-    "&scope=" + onedriveAppInfo.scopes +
-    "&response_type=code" +
-    "&redirect_uri=" + onedriveAppInfo.redirect_uri,
+  contentURL: OneDrive.getLoginURL(),
   contentScriptFile: self.data.url("js/onedrive.js"),
   contentScriptWhen: "ready",
   height: 500,
@@ -52,72 +41,12 @@ loginPanel.on('show', function(e) {
   loginPanel.port.on('gotCode', function(code) {
     loginPanel.contentURL = self.data.url("html/loading.html");
     console.log("the code is:", code);
-    var res = redeemCode(code);
+    var res = OneDrive.redeemCode(code, () => {
+      console.log("saved everything");
+    });
   });
 });
 
-function redeemCode(code) {
-  var requestToken = Request({
-    url: onedriveAppInfo.token_url,
-    contentType: "application/x-www-form-urlencoded",
-    content: {
-      client_id: onedriveAppInfo.client_id,
-      redirect_uri: onedriveAppInfo.redirect_uri,
-      client_secret: onedriveAppInfo.client_secret,
-      code: code,
-      grant_type: "authorization_code"
-    },
-    onComplete: function(response) {
-      //console.log(response.json);
-      simpleStorage.storage.onedrive.access_token =
-        response.json.access_token;
-      simpleStorage.storage.onedrive.refresh_token =
-        response.json.refresh_token;
-      simpleStorage.storage.onedrive.expires_in =
-        response.json.expires_in * 1000;
-      simpleStorage.storage.onedrive.expires_on =
-        Date.now() + (response.json.expires_in * 1000) - 100000;
-      console.log(simpleStorage.storage.onedrive);
-      return response.json;
-    }
-  });
-
-  requestToken.post();
-}
-
-function checkOnedriveToken() {
-  if (Date.now() > simpleStorage.storage.onedrive.expires_on) {
-    return true;
-  }
-
-  return false;
-}
-
-function redeemRefresh() {
-  var requestToken = Request({
-    url: onedriveAppInfo.token_url,
-    contentType: "application/x-www-form-urlencoded",
-    content: {
-      client_id: onedriveAppInfo.client_id,
-      redirect_uri: onedriveAppInfo.redirect_uri,
-      client_secret: onedriveAppInfo.client_secret,
-      refresh_token: simpleStorage.storage.onedrive.refresh_token
-    },
-    onComplete: function(response) {
-      simpleStorage.storage.onedrive.access_token =
-        response.json.access_token;
-      simpleStorage.storage.onedrive.refresh_token =
-        response.json.refresh_token;
-      simpleStorage.storage.onedrive.expires_in =
-        response.json.expires_in * 1000;
-      simpleStorage.storage.onedrive.expires_on =
-        Date.now() + (response.json.expires_in * 1000) - 100000;
-      return response.json;
-    }
-  });
-
-  requestToken.post();
-}
 
 function handleActionButtonClick(state) {
   console.log("Button clicked...");
