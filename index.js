@@ -22,7 +22,8 @@ var onedriveAppInfo = {
   token_url:      "https://login.live.com/oauth20_token.srf"
 };
 
-simpleStorage.storage.onedriveCode = "";
+if (!simpleStorage.storage.onedrive)
+  simpleStorage.storage.onedrive = {};
 
 var button = toggleButtons.ToggleButton({
   id: "fast-save-pref-button",
@@ -67,7 +68,16 @@ function redeemCode(code) {
       grant_type: "authorization_code"
     },
     onComplete: function(response) {
-      console.log(response.json);
+      //console.log(response.json);
+      simpleStorage.storage.onedrive.access_token =
+        response.json.access_token;
+      simpleStorage.storage.onedrive.refresh_token =
+        response.json.refresh_token;
+      simpleStorage.storage.onedrive.expires_in =
+        response.json.expires_in * 1000;
+      simpleStorage.storage.onedrive.expires_on =
+        Date.now() + (response.json.expires_in * 1000) - 100000;
+      console.log(simpleStorage.storage.onedrive);
       return response.json;
     }
   });
