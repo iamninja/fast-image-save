@@ -1,0 +1,6 @@
+{
+  "directory": "data/bower_components/",
+  "timeout": 120000,
+  "color": true,
+  "interactive": true
+}

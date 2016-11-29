@@ -5,3 +5,6 @@
 *.xmi
 *.zip
 
+# Ignore bower_components
+data/bower_components
+

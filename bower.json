@@ -1,0 +1,25 @@
+{
+  "name": "fastimagesave",
+  "description": "Fast save images on cloud services",
+  "main": "index.js",
+  "authors": [
+    "Vagios Vlachos"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "jetpack"
+  ],
+  "homepage": "https://github.com/iamninja/fast-image-save",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "data/bower_components/",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "material-design-icons": "^3.0.1",
+    "materialize": "^0.97.8"
+  }
+}
